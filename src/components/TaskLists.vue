@@ -46,6 +46,23 @@
     }
   };
 
+  const changeTaskStatus = async (id, status) => {
+  try {
+    const response = await axios.put(`/api/tasks/${id}`, { status: status });
+
+    toast.success('Task status changed successfully');
+
+    // Update the task in the tasks list properly
+    const taskIndex = props.tasks.findIndex(task => task.id === id);
+    if (taskIndex !== -1) {
+      props.tasks[taskIndex] = { ...props.tasks[taskIndex], status: status };
+    }
+  } catch (error) {
+    toast.error('Task status change failed');
+    console.error("Error changing task status:", error);
+  }
+};
+
 // Priority level helper function
 const priorityLevel = (level) => {
   switch (level) {
@@ -122,7 +139,7 @@ const priorityLevel = (level) => {
                     </small>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" @click="changeTaskStatus(task.id, task.status === 'Pending' ? 'Completed' : 'Pending')">
                       <i :class="`pi pi-circle`"></i>
                     </button>
                     <button class="btn btn-danger" @click="deleteTask(task.id)"><i class="pi pi-trash"></i></button>

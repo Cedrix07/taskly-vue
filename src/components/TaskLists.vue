@@ -15,16 +15,16 @@
     }
   });
 
-  const selectedPriority = ref(''); // Tracks the selected priority level
+  const selectedPriorityLevel = ref(''); // Tracks the selected priority level
+  const selectedStatus = ref(''); // Tracks the selected status
 
-  // Computed property to filter tasks based on the selected priority level
+  // Computed property to filter tasks based on the selected priority level or slelected status
   const filteredTasks = computed(() => {
-      // If no priority is selected, return all tasks
-      if (!selectedPriority.value) {
-        return props.tasks;
-      }
-      // Filter tasks based on selected priority
-      return props.tasks.filter(task => task.level === selectedPriority.value);
+    return props.tasks.filter(task => {
+      const matchesPriority = selectedPriorityLevel.value ? task.level === selectedPriorityLevel.value : true;
+      const matchesStatus = selectedStatus.value ? task.status.toLowerCase() === selectedStatus.value.toLowerCase() : true;
+      return matchesPriority && matchesStatus;
+    });
   });
 
   // Task delete function
@@ -83,8 +83,13 @@ const priorityLevel = (level) => {
         <div class="col-12 d-flex justify-content-between align-items-center mb-3">
             <h4>Task Lists ({{ filteredTasks.length }})</h4>
             <div class="d-flex gap-2">
-              <div>
-                <select name="level" id="level" class="form-select" v-model="selectedPriority" @change="handlePriorityChange">
+              <div class="d-flex gap-2">
+                <select name="status" id="status" class="form-select" v-model="selectedStatus">
+                      <option value="" selected>Sort by status</option>
+                      <option value="completed">Completed</option>
+                      <option value="pending">Pending</option>
+                </select>
+                <select name="level" id="level" class="form-select" v-model="selectedPriorityLevel" @change="handlePriorityChange">
                       <option value="" selected>Sort by priority level</option>
                       <option value="1">Low</option>
                       <option value="2">Medium</option>

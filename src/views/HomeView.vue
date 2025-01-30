@@ -11,10 +11,9 @@ onMounted(async () => {
     const response = await axios.get('/api/tasks'); 
 
     // Sort tasks by due date first, then priority level
-    tasks.value = response.data.filter((tasks)=> tasks.status === 'pending').sort((a, b) => {
+    tasks.value = response.data.sort((a, b) => {
       const dateA = new Date(a.due);
       const dateB = new Date(b.due);
-
       // First, compare due dates
       if (dateA < dateB) return -1;
       if (dateA > dateB) return 1;

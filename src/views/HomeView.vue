@@ -17,7 +17,6 @@ onMounted(async () => {
       // First, compare due dates
       if (dateA < dateB) return -1;
       if (dateA > dateB) return 1;
-
       // If due dates are the same, compare priority (higher number = higher priority)
       return b.level - a.level;
     });

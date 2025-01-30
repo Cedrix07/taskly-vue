@@ -22,7 +22,7 @@
   const filteredTasks = computed(() => {
     return props.tasks.filter(task => {
       const matchesPriority = selectedPriorityLevel.value ? task.level === selectedPriorityLevel.value : true;
-      const matchesStatus = selectedStatus.value ? task.status.toLowerCase() === selectedStatus.value.toLowerCase() : true;
+      const matchesStatus = selectedStatus.value ? task.status.toLowerCase() === selectedStatus.value.toLowerCase() : task.status === 'pending';
       return matchesPriority && matchesStatus;
     });
   });
@@ -46,22 +46,26 @@
     }
   };
 
-  const changeTaskStatus = async (id, status) => {
-  try {
-    const response = await axios.put(`/api/tasks/${id}`, { status: status });
+  // Toggle task status between "pending" and "completed"
+  const toggleTaskStatus = async (task) => {
+    const newStatus = task.status.toLowerCase() === 'pending' ? 'completed' : 'pending';
 
-    toast.success('Task status changed successfully');
+    try {
+      // Update task status on JSON Server
+      await axios.patch(`/api/tasks/${task.id}`, { status: newStatus });
 
-    // Update the task in the tasks list properly
-    const taskIndex = props.tasks.findIndex(task => task.id === id);
-    if (taskIndex !== -1) {
-      props.tasks[taskIndex] = { ...props.tasks[taskIndex], status: status };
+      // Update local task list
+      task.status = newStatus;
+
+      toast.success(`Task marked as ${newStatus}`);
+    } catch (error) {
+      toast.error('Failed to update task status');
+      console.error("Error updating task status:", error);
     }
-  } catch (error) {
-    toast.error('Task status change failed');
-    console.error("Error changing task status:", error);
-  }
-};
+  };
+
+
+/** Helper code section **/
 
 // Priority level helper function
 const priorityLevel = (level) => {
@@ -93,6 +97,10 @@ const priorityLevel = (level) => {
     }else{
       return "text-bg-success"
     }
+  }
+
+  const taskStatusIcon = (status) => {
+    return status === 'Pending' || status === 'pending' ? 'pi pi-times-circle' : 'pi pi-check-circle';
   }
 </script>
 <template>  
@@ -139,8 +147,8 @@ const priorityLevel = (level) => {
                     </small>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-secondary" @click="changeTaskStatus(task.id, task.status === 'Pending' ? 'Completed' : 'Pending')">
-                      <i :class="`pi pi-circle`"></i>
+                    <button class="btn btn-success" @click="toggleTaskStatus(task)">
+                      <i :class="`pi ${taskStatusIcon(task.status)}`"></i> 
                     </button>
                     <button class="btn btn-danger" @click="deleteTask(task.id)"><i class="pi pi-trash"></i></button>
                     <RouterLink :to="`/tasks/edit/${task.id}`" class="btn btn-secondary"><i class="pi pi-pen-to-square"></i></RouterLink>

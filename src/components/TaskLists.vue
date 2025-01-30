@@ -87,9 +87,18 @@
   });
 
   watch(selectedTasks, (newSelected) => {
-    selectAllTasks.value = newSelected.length === filteredTasks.value.length && filteredTasks.value.length > 0;
+    if (newSelected.length === filteredTasks.value.length) {
+      selectAllTasks.value = true; // Only select all if all tasks are selected
+    } else if (newSelected.length === 0) {
+      selectAllTasks.value = false; // Only deselect all if none are selected
+    }
   });
 
+  watch([selectedPriorityLevel, selectedStatus], () => {
+    selectedTasks.value = []; // Clear selected tasks when filtering
+    selectAllTasks.value = false; // Reset "Select All" checkbox
+  });
+  
   // Toggle task status between "pending" and "completed"
   const toggleTaskStatus = async (task) => {
     const newStatus = task.status.toLowerCase() === 'pending' ? 'completed' : 'pending';
@@ -130,10 +139,6 @@ const priorityLevel = (level) => {
       default: return "text-bg-secondary";
     }
   };
-
-  const isCompleted = (status) =>{
-    return status === 'completed' || status === 'Completed' ? 'text-decoration-line-through text-muted' : '';
-  }
 
   const statusColorCoding = (status) => {
     if(status === 'Pending' || status === 'pending'){
@@ -178,14 +183,16 @@ const priorityLevel = (level) => {
         </div>
     </div>
     <div class="row g-2">
-        <input type="checkbox" name="selected" :class="`ms-3 form-check-input ${filteredTasks.length === 0 ? 'd-none' : ''}`"  v-model="selectAllTasks" :value="filteredTasks.id">
+       
+          <input type="checkbox" name="selected" :class="`ms-3 form-check-input ${filteredTasks.length === 0 ? 'd-none' : ''}`"  v-model="selectAllTasks" :value="filteredTasks.id">
+         
         <div v-if="filteredTasks.length > 0" class="col-12" v-for="task in filteredTasks" :key="task.id">
             <div class="card border-0 shadow p-3 d-flex flex-row justify-content-between align-items-center">
                 <div>
                     <div class="d-inline-flex align-items-center gap-2">
                       <input type="checkbox" name="selected" class="form-check-input" :value="task.id"
                       v-model="selectedTasks">
-                      <p :class="`fw-medium mb-0 fs-5 ${isCompleted(task.status)}`">{{ task.name }}</p>
+                      <p class="fw-medium mb-0 fs-5">{{ task.name }}</p>
                     </div>
                     <div>
                       <small class="fw-medium text-muted">Due: {{ task.due }}</small>
